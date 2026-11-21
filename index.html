@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<title>ぬいぐるみ相乗り便</title>
+<!--
+  ぬいぐるみ相乗り便 購入可能リスト（本番用・2026-11-21公開準備）
+  商品部分は items.json に分離。このページは items.json を読み込んで表示する。
+  商品の差し替え・価格変更・売り切れ対応は items.json の書き換えだけで済み、
+  デザイン側は触らない。更新はアシスタント経由で行う。
+  ローカルでファイルとして開いた場合は fetch が効かないため、
+  内蔵の予備データ（items.json と同じ内容）で表示する。
+  サーバー上では items.json が優先される。
+  タイトルとイラストは title.png / mascot.png（濃青 #1d4e79・透過）。
+  色は窓ページに寄せた（地 #b9d0de、面 #cfe0ea、文字 #27343b、青 #1d4e79）。
+  商品枠は地とのコントラストを取るため一段明るい #eef5f9 にし、青系の枠線を付けた。
+  書体も窓ページと同じ Shippori Mincho の並び。
+  アクセス計測は本体と同じ GA4（G-V99XPQ8NYS）。
+-->
+<style>
+  body{margin:0;background:#b9d0de;color:#27343b;font-family:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.9}
+  .wrap{max-width:640px;margin:0 auto;padding:32px 20px 64px}
+  h1{margin:0 0 8px;display:flex;align-items:center;justify-content:center;gap:12px;height:clamp(76px,23vw,118px)}
+  .title-img{height:100%;width:auto}
+  .mascot-img{height:100%;width:auto}
+  .sub{font-size:15px;color:#4a5b66;margin:0 0 24px}
+  .item{background:#eef5f9;border:1px solid rgba(29,78,121,.35);box-shadow:0 1px 2px rgba(39,52,59,.08);padding:20px;margin:0 0 14px;display:flex;gap:16px;align-items:flex-start;position:relative}
+  .item.ended{opacity:.55}
+  .badge{position:absolute;top:-13px;left:-8px;width:50px;height:50px;border-radius:50%;color:#fff;font-family:"Hiragino Kaku Gothic ProN",sans-serif;font-size:12px;display:flex;align-items:center;justify-content:center;transform:rotate(-12deg);box-shadow:0 1px 3px rgba(39,52,59,.3);z-index:1}
+  .badge.shinkan{background:#c05a44}
+  .badge.brush{background:#748a5f}
+  .badge.zine{background:#1d4e79;font-size:11px}
+  .code{position:absolute;top:-10px;left:50px;background:#f4f8fb;border:1.5px solid #1d4e79;color:#1d4e79;font-family:"Hiragino Kaku Gothic ProN",sans-serif;font-size:13px;line-height:1;padding:5px 8px;z-index:1}
+  .cover{flex:0 0 72px;height:100px;background:#d9e7ef;display:flex;align-items:center;justify-content:center;font-size:13px;color:#7b93a5;font-family:"Hiragino Kaku Gothic ProN",sans-serif;overflow:hidden}
+  .cover img{width:100%;height:100%;object-fit:cover;display:block}
+  .cover.contain img{object-fit:contain}
+  .item .body{flex:1;min-width:0}
+  .item h2{font-size:18px;margin:0 0 2px;font-family:"Hiragino Kaku Gothic ProN",sans-serif}
+  .item p{margin:0;font-size:16px}
+  .price{font-family:"Hiragino Kaku Gothic ProN",sans-serif;font-size:16px;margin-top:2px}
+  .status{font-size:14px;color:#1d4e79;font-family:"Hiragino Kaku Gothic ProN",sans-serif}
+  .item.ended .status{color:#b5493a}
+  .note{font-size:15px;margin:24px 0 0}
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V99XPQ8NYS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-V99XPQ8NYS');
+</script>
+</head>
+<body>
+<div class="wrap">
+
+  <h1><img class="title-img" src="title.png" alt="ぬいぐるみ相乗り便"><img class="mascot-img" src="mascot.png" alt=""></h1>
+  <p class="sub">ぬいぐるみ洗い・お直しの返送時に、本などを相乗りさせることができます。同梱する本の送料はかかりません。</p>
+
+  <div id="items"></div>
+
+  <p class="note">気になる商品があれば、注文番号か商品名でお知らせください。サービス+商品の合計金額をまとめてお支払いいただけます。<br>
+  ぬいぐるみと相乗りさせてお届けします。</p>
+
+</div>
+<script>
+  // 予備データ（items.json が読めない環境用。内容は items.json と同じ）
+  var FALLBACK = [
+    { "mark": "表紙", "badge": "新刊", "no": "001", "name": "くますけと一緒に", "note": "ぬいぐるみのくますけに人の不幸を願うと叶ってしまう。くますけが邪悪なぬいぐるみなんじゃないかと思い始め……。", "price": "968円", "status": "在庫あり" },
+    { "mark": "表紙", "badge": "新刊", "no": "002", "name": "ふわふわで生きのび", "note": "世界を少しでもましな場所にしようと足掻いてきた小説家の「私」は、買ったばかりのうさぎのぬいぐるみの声を聞く。「なにをするにも、まずは自分がふわふわでなくっちゃ！」", "price": "1,200円", "status": "在庫あり" },
+    { "mark": "表紙", "badge": "新刊", "no": "003", "name": "ぬいぐるみとしゃべる人はやさしい", "note": "“男らしさ”“女らしさ”のノリが苦手な大学生。ぬいぐるみサークルで痛みややさしさの意味を問い直していく。", "price": "748円", "status": "在庫あり" },
+    { "mark": "表紙", "badge": "新刊", "no": "004", "name": "ぬいぐるみの愛しかた", "note": "ぬいぐるみ好きの編集者による、本気の「ぬい活」ガイドブック。", "price": "1,540円", "status": "在庫あり" },
+    { "mark": "—", "badge": "ブラシ", "no": "005", "name": "ぬいぐるみ専用ブラシ", "note": "山羊毛のやさしいブラシ。ぬいぐるみを傷つけずにふわふわに。", "price": "1,600円", "status": "在庫あり" },
+    { "mark": "—", "badge": "ZINE", "no": "006", "name": "私はこの子に借りがある（2）", "note": "ぬいぐるみとの思い出、感謝を語り合うイベントの記録。A4クラフト紙1枚の両面印刷。限定50部発行。", "price": "330円", "status": "在庫あり" }
+  ];
+  var BADGE_CLASS = { "新刊": "shinkan", "ブラシ": "brush", "ZINE": "zine" };
+  function render(items) {
+    var html = "";
+    items.forEach(function (it) {
+      var ended = it.status === "終了";
+      var badge = it.badge ? '<span class="badge ' + (BADGE_CLASS[it.badge] || "") + '">' + it.badge + '</span>' : '';
+      var code = it.no ? '<span class="code">注文番号 ' + it.no + '</span>' : '';
+      html += '<div class="item' + (ended ? ' ended' : '') + '">'
+        + badge + code
+        + '<div class="cover' + (it.fit === 'contain' ? ' contain' : '') + '">' + (it.img ? '<img src="' + it.img + '" alt="">' : it.mark) + '</div>'
+        + '<div class="body"><h2>' + it.name + '</h2><p>' + it.note + '</p>'
+        + '<p class="status">' + it.status + '</p>'
+        + '<p class="price">' + it.price + '</p></div></div>';
+    });
+    document.getElementById("items").innerHTML = html;
+  }
+  fetch("items.json")
+    .then(function (r) { return r.json(); })
+    .then(render)
+    .catch(function () { render(FALLBACK); });
+</script>
+</body>
+</html>
